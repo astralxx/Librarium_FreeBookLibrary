@@ -1,7 +1,7 @@
 # 📚 Librarium - Книжная онлайн библиотека
 
 Современное веб-приложение для чтения книг с микросервисной архитектурой.
-(пока не рабатает 🥺)
+(пока не рабатает 🥺, я меняю mysql на postgresql)
 
 ## 🏗️ Архитектура
 
@@ -11,7 +11,7 @@
 - **API Gateway** - Go сервис для маршрутизации запросов
 - **Auth Service** - Go сервис для аутентификации (JWT, Google OAuth)
 - **Books Service** - Go сервис для работы с каталогом книг
-- **MySQL** - Базы данных для auth и books сервисов
+- **PostgreSQL** - Базы данных для auth и books сервисов
 
 ## 🚀 Быстрый старт
 
@@ -46,7 +46,7 @@ cp gateway/.env.example gateway/.env
 docker-compose up -d
 ```
 
-5. Дождаться запуска всех сервисов (约30 секунд)
+5. Дождаться запуска всех сервисов (30 секунд)
 
 6. Открыть приложение:
    - Frontend: http://localhost:5173
@@ -124,7 +124,7 @@ library-reports/
 | Переменная | Описание | По умолчанию |
 |------------|----------|--------------|
 | `DB_USER` | Пользователь MySQL | `root` |
-| `DB_PASS` | Пароль MySQL | `root` |
+| `DB_PASS` | Пароль MySQL | `ur_password` |
 | `DB_HOST` | Хост MySQL | `127.0.0.1:3306` |
 | `DB_NAME` | Имя БД | `librariumdb` |
 | `JWT_SECRET` | Секретный ключ JWT | (обязательно) |
@@ -136,9 +136,9 @@ library-reports/
 #### Books Service
 | Переменная | Описание | По умолчанию |
 |------------|----------|--------------|
-| `DB_USER` | Пользователь MySQL | `root` |
-| `DB_PASS` | Пароль MySQL | `root` |
-| `DB_HOST` | Хост MySQL | `127.0.0.1:3307` |
+| `DB_USER` | Пользователь PostgreSQL | `root` |
+| `DB_PASS` | Пароль PostgreSQL | `ur_password` |
+| `DB_HOST` | Хост PostgreSQL | `127.0.0.1:3307` |
 | `DB_NAME` | Имя БД | `books-db` |
 | `SERVER_PORT` | Порт сервера | `3001` |
 
@@ -236,7 +236,7 @@ curl http://localhost:8080/books/category?category=popular
    taskkill /PID <PID> /F
    ```
 
-2. **MySQL не запускается**
+2. **PostgreSQL не запускается**
    ```bash
    # Очистить volumes
    docker-compose down -v
@@ -253,7 +253,7 @@ curl http://localhost:8080/books/category?category=popular
 - Go 1.24
 - Gorilla Mux (роутинг)
 - JWT (аутентификация)
-- MySQL (база данных)
+- PostgreSQL (база данных)
 - bcrypt (хеширование паролей)
 
 ### Frontend
@@ -267,7 +267,7 @@ curl http://localhost:8080/books/category?category=popular
 ### Инфраструктура
 - Docker & Docker Compose
 - Nginx (статические файлы)
-- MySQL 8.0
+- PostgreSQL
 
 ## 📝 Лицензия
 
