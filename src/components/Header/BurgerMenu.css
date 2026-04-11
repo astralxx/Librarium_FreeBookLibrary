@@ -1,0 +1,187 @@
+/* BurgerMenu.css */
+.burger-menu {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    max-width: 280px;
+    height: 100vh;
+    background: #1C1C1C;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.burger-menu.active {
+    left: 0;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.burger-menu-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 0;
+}
+
+.burger-menu-head {
+    width: 100%;
+    height: 124px;
+    background: #262626;
+    display: flex;
+    justify-content: space-between; 
+    align-items: flex-start;
+    padding: 0 20px;
+    box-sizing: border-box;
+    position: relative; 
+}
+
+.burger-menu-cross-close {
+    position: absolute; 
+    top: 13px;
+    right: 20px; 
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    visibility: visible;
+}
+
+.burger-menu-cross-close img {
+    width: 25px;
+    height: 25px;
+}
+
+.burger-menu-ul-A,
+.burger-menu-ul-B {
+    width: 100%;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+.burger-menu-ul-A ul,
+.burger-menu-ul-B ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.burger-menu-ul-A li,
+.burger-menu-ul-B li {
+    margin: 10px 0;
+    width: 100%;
+}
+
+.burger-menu-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 40px;
+    padding: 0 15px;
+    background: #262626;
+    border-radius: 10px;
+    color: white;
+    font-family: "Montserrat", serif;
+    font-size: 16px;
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.burger-menu-item:hover {
+    color: #FF4D00;
+    background-color: #333;
+}
+
+.burger-button-exit {
+    background: #FF4D00;
+    color: black;
+}
+
+.burger-button-exit:hover {
+    background: #ff6d33;
+    color: black;
+}
+
+.burger-icon img {
+    width: 18px;
+    height: 18px;
+    margin: 5px 14px 0 0;
+}
+
+.account-field {
+    margin: 30px 7px 10px;
+    display: flex;
+    align-items: center;
+    max-width: calc(100% - 10px);
+    overflow: hidden;
+}
+
+.Username-email {
+    margin-left: 15px;
+    overflow: hidden; /* Скрытие выходящего за пределы контента */
+    text-overflow: ellipsis; /* Добавление многоточия */
+    white-space: nowrap; /* Запрет переноса строк */
+    flex: 1; /* Занимает доступное пространство */
+}
+
+.Username-email h1 {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 24px;
+    color: #fff;
+    font-family: "Montserrat", serif;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin: 0; /* Убираем стандартные отступы */
+}
+
+.Username-email p {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 18px;
+    color: #ADADAD;
+    font-family: "Montserrat", serif;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin: 0; /* Убираем стандартные отступы */
+}
+
+.burger-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.burger-menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Адаптивные стили */
+@media (min-width: 1111px) {
+    .burger-menu {
+        left: auto;
+        right: -300px;
+        transition: right 0.3s ease;
+    }
+    
+    .burger-menu.active {
+        left: auto;
+        right: 0;
+    }
+}

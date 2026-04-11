@@ -1,0 +1,80 @@
+/**
+ * ReadingProgress Styles - стили прогресс-бара чтения
+ * Фиксированный индикатор прокрутки страницы
+ */
+
+.reading-progress {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  height: 4px;
+  background: var(--color-bg-dark-secondary);
+  pointer-events: none;
+}
+
+.reading-progress--top {
+  top: 0;
+}
+
+.reading-progress--bottom {
+  bottom: 0;
+}
+
+.reading-progress__bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: var(--gradient-primary);
+  transform-origin: left;
+  will-change: transform;
+}
+
+.reading-progress__percentage {
+  position: absolute;
+  right: var(--spacing-md);
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  background: var(--color-bg-dark);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-medium);
+  pointer-events: auto;
+}
+
+/* Светлая тема */
+.theme-light .reading-progress {
+  background: var(--color-bg-light);
+}
+
+.theme-light .reading-progress__percentage {
+  background: var(--color-bg-white);
+  color: var(--color-text-dark);
+  box-shadow: var(--shadow-light);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .reading-progress {
+    height: 3px;
+  }
+  
+  .reading-progress__percentage {
+    font-size: 0.6875rem;
+    padding: var(--spacing-xs);
+    right: var(--spacing-sm);
+  }
+}
+
+/* Уменьшение анимаций для пользователей с prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .reading-progress__bar {
+    transition: none;
+  }
+}

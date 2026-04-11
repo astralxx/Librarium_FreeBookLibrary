@@ -1,0 +1,404 @@
+/**
+ * StatsPage Styles - премиальный дизайн страницы статистики
+ * Включает glassmorphism эффект и анимации
+ */
+
+.stats-page {
+  min-height: 100vh;
+  background: var(--gradient-dark);
+  padding: var(--spacing-2xl);
+  padding-top: 100px;
+}
+
+.stats-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Заголовок */
+.stats-header {
+  text-align: center;
+  margin-bottom: var(--spacing-3xl);
+}
+
+.stats-title {
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.stats-subtitle {
+  font-size: 1.125rem;
+  color: var(--color-text-secondary);
+}
+
+/* Графики */
+.stats-charts {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-3xl);
+}
+
+.stats-chart-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-xl);
+}
+
+.stats-chart-title {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+.stats-chart-container {
+  position: relative;
+  height: 300px;
+}
+
+/* Контролы */
+.stats-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  flex-wrap: wrap;
+}
+
+.stats-search {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex: 1;
+  min-width: 250px;
+}
+
+.stats-search-input {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  transition: all var(--transition-normal) ease;
+}
+
+.stats-search-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.stats-search-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+}
+
+.stats-search-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.stats-search-btn:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-glow);
+}
+
+.stats-filters {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.stats-filter-select {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.stats-filter-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.stats-filter-select option {
+  background: var(--color-bg-dark-secondary);
+  color: var(--color-text-primary);
+}
+
+/* Таблица */
+.stats-table-container {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  margin-bottom: var(--spacing-xl);
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.stats-table-header {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.stats-table th {
+  padding: var(--spacing-md) var(--spacing-lg);
+  text-align: left;
+  font-family: var(--font-primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+  white-space: nowrap;
+}
+
+.stats-table th:hover {
+  color: var(--color-primary);
+  background: rgba(255, 107, 53, 0.1);
+}
+
+.stats-table th.sortable::after {
+  content: '↕';
+  margin-left: var(--spacing-sm);
+  opacity: 0.5;
+}
+
+.stats-table th.sort-asc::after {
+  content: '↑';
+  opacity: 1;
+  color: var(--color-primary);
+}
+
+.stats-table th.sort-desc::after {
+  content: '↓';
+  opacity: 1;
+  color: var(--color-primary);
+}
+
+.stats-table td {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 0.9375rem;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stats-table tbody tr {
+  transition: all var(--transition-normal) ease;
+}
+
+.stats-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.stats-table-rating {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.stats-table-rating-star {
+  color: #FFB800;
+}
+
+.stats-table-views {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.stats-table-views-icon {
+  opacity: 0.7;
+}
+
+/* Пагинация */
+.stats-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+}
+
+.stats-pagination-btn {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.stats-pagination-btn:hover:not(:disabled) {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: rgba(255, 107, 53, 0.3);
+  color: var(--color-primary);
+}
+
+.stats-pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stats-pagination-info {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+/* Пустое состояние */
+.stats-empty {
+  text-align: center;
+  padding: var(--spacing-3xl);
+}
+
+.stats-empty-icon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-lg);
+  opacity: 0.5;
+}
+
+.stats-empty-text {
+  font-size: 1rem;
+  color: var(--color-text-secondary);
+}
+
+/* Адаптивность */
+@media (max-width: 1023px) {
+  .stats-charts {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-md);
+  }
+  
+  .stats-search {
+    width: 100%;
+  }
+  
+  .stats-filters {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 767px) {
+  .stats-page {
+    padding: var(--spacing-lg);
+    padding-top: 80px;
+  }
+  
+  .stats-title {
+    font-size: 2rem;
+  }
+  
+  .stats-subtitle {
+    font-size: 1rem;
+  }
+  
+  .stats-chart-card {
+    padding: var(--spacing-lg);
+  }
+  
+  .stats-chart-container {
+    height: 250px;
+  }
+  
+  .stats-table-container {
+    overflow-x: auto;
+  }
+  
+  .stats-table {
+    min-width: 600px;
+  }
+  
+  .stats-table th,
+  .stats-table td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.875rem;
+  }
+  
+  .stats-filters {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .stats-filter-select {
+    width: 100%;
+    min-height: 44px; /* Minimum touch target */
+  }
+  
+  .stats-search-input {
+    min-height: 44px; /* Minimum touch target */
+  }
+  
+  .stats-search-btn {
+    min-height: 44px; /* Minimum touch target */
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+}
+
+@media (max-width: 479px) {
+  .stats-title {
+    font-size: 1.75rem;
+  }
+  
+  .stats-pagination {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .stats-pagination-btn {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    min-height: 44px; /* Minimum touch target */
+  }
+  
+  .stats-pagination-info {
+    margin: var(--spacing-xs) 0;
+  }
+  
+  .stats-chart-container {
+    height: 200px;
+  }
+}

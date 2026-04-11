@@ -1,0 +1,235 @@
+/* Header.css */
+header {
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: black;
+    z-index: 1000;
+    padding: 0px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo h1 {
+    font-size: 24px;
+    font-family: "Montserrat", serif;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 34px;
+    line-height: 21px;
+    margin: 13px;
+    color: #FF4D00;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+}
+
+nav ul li {
+    margin-left: 20px;
+    font-family: "Montserrat", serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 22px;
+    color: #FFFFFF;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: white;
+    transition: color 0.3s;
+}
+
+nav ul li a:hover {
+    color: #FF4D00;
+}
+
+.menu-icon-1000px {
+    display: none;
+    position: relative;
+    width: 45px;
+    height: 30px;
+    opacity: 0.7;
+    cursor: pointer;
+    margin: 13px;
+    margin-bottom: 31px;
+}
+
+.menu-search-1000px {
+    display: none;
+    position: relative;
+    width: 45px;
+    height: 30px;
+    opacity: 0.7;
+    cursor: pointer;
+    margin: 13px;
+    margin-bottom: 31px;
+}
+
+/* SearchBar.css */
+.search-menu {
+    display: flex;
+    align-items: center;
+}
+
+.input-container {
+    position: relative;
+    display: inline-block;
+}
+
+.search-menu input[type="text"] {
+    padding: 10px;
+    border: none;
+    width: 386px;
+    border-radius: 10px;
+    background: #484848;
+    margin-right: 15px;
+    color: #fff;
+    font-family: "Montserrat", serif;
+    font-style: normal;
+}
+
+.search-menu input::placeholder {
+    color: #fff;
+    font-family: "Montserrat", serif;
+    font-style: normal;
+    opacity: 0.7;
+}
+
+.button-search {
+    position: absolute;
+    right: 27px;
+    top: 54%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    opacity: 0.7;
+    cursor: pointer;
+}
+
+.menu-icon {
+    position: relative;
+    display: block;
+    width: 45px;
+    height: 30px;
+    opacity: 0.7;
+    cursor: pointer;
+    margin: 13px;
+    margin-bottom: 31px;
+}
+
+/* Адаптивные стили для SearchBar */
+@media (max-width: 1110px) {
+    .search-menu {
+        display: none;
+    }
+
+    .menu-icon {
+        display: none;
+    }
+
+/* Адаптивные стили для BurgerMenu */
+    .burger-menu {
+        left: -300px;
+        right: auto;
+    }
+
+    .burger-menu.active {
+        left: 0;
+    }
+
+    .burger-menu-cross-close {
+        visibility: hidden;
+    }
+
+/* Адаптивные стили для Header */
+    .menu-icon-1000px {
+        display: block;
+    }
+
+    .menu-search-1000px {
+        display: block;
+    }
+
+    nav ul {
+        display: none;
+    }
+}
+
+/* Responsive styles for mobile devices */
+@media (max-width: 767px) {
+    header {
+        padding: 0 16px;
+    }
+    
+    .logo h1 {
+        font-size: 24px;
+        margin: 8px;
+    }
+    
+    .menu-icon-1000px,
+    .menu-search-1000px {
+        width: 40px;
+        height: 30px;
+        margin: 8px;
+    }
+    
+    nav ul {
+        display: none;
+    }
+    
+    .search-menu input[type="text"] {
+        width: 200px;
+        padding: 8px;
+    }
+}
+
+/* Responsive styles for tablet devices */
+@media (min-width: 768px) and (max-width: 1023px) {
+    header {
+        padding: 0 24px;
+    }
+    
+    .logo h1 {
+        font-size: 28px;
+        margin: 10px;
+    }
+    
+    .search-menu input[type="text"] {
+        width: 250px;
+        padding: 9px;
+    }
+}
+
+/* Responsive styles for desktop devices */
+@media (min-width: 1024px) {
+    header {
+        padding: 0 32px;
+    }
+    
+    .logo h1 {
+        font-size: 34px;
+        margin: 13px;
+    }
+    
+    .search-menu input[type="text"] {
+        width: 386px;
+        padding: 10px;
+    }
+}
+

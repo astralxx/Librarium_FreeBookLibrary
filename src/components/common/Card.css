@@ -1,0 +1,150 @@
+/**
+ * Card Styles - стили карточек с Netflix-стилем
+ * Премиальный дизайн с глубокими тенями и анимациями
+ */
+
+.card {
+  position: relative;
+  background: var(--color-bg-dark-secondary);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: all var(--transition-normal) ease;
+}
+
+/* Варианты */
+.card--default {
+  border: 1px solid var(--color-border-light);
+}
+
+.card--glass {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.card--elevated {
+  border: none;
+  box-shadow: var(--shadow-medium);
+}
+
+.card--outlined {
+  background: transparent;
+  border: 2px solid var(--color-border-light);
+}
+
+/* Отступы */
+.card--padding-none {
+  padding: 0;
+}
+
+.card--padding-small {
+  padding: var(--spacing-sm);
+}
+
+.card--padding-medium {
+  padding: var(--spacing-md);
+}
+
+.card--padding-large {
+  padding: var(--spacing-lg);
+}
+
+/* Интерактивные состояния */
+.card--hoverable {
+  cursor: pointer;
+}
+
+.card--hoverable:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  border-color: var(--color-primary);
+}
+
+.card--clickable {
+  cursor: pointer;
+}
+
+.card--clickable:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.card--clickable:active {
+  transform: translateY(-4px);
+}
+
+/* Заголовок */
+.card__header {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+/* Тело */
+.card__body {
+  padding: var(--spacing-md);
+}
+
+/* Футер */
+.card__footer {
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* Светлая тема */
+.theme-light .card {
+  background: var(--color-bg-white);
+  border-color: var(--color-border-dark);
+}
+
+.theme-light .card--glass {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.theme-light .card--outlined {
+  background: transparent;
+  border-color: var(--color-border-dark);
+}
+
+.theme-light .card--hoverable:hover,
+.theme-light .card--clickable:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  border-color: var(--color-primary);
+}
+
+.theme-light .card__header,
+.theme-light .card__footer {
+  border-color: var(--color-border-dark);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .card--padding-medium {
+    padding: var(--spacing-sm);
+  }
+  
+  .card--padding-large {
+    padding: var(--spacing-md);
+  }
+  
+  .card__header,
+  .card__body,
+  .card__footer {
+    padding: var(--spacing-sm);
+  }
+}
+
+/* Уменьшение анимаций для пользователей с prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+  
+  .card--hoverable:hover,
+  .card--clickable:hover {
+    transform: none;
+  }
+}

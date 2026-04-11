@@ -1,0 +1,127 @@
+import React, { useRef } from 'react';
+import BookCard from './BookCard';
+
+const BookCarousel_A = () => {
+  const scrollContainerRef = useRef(null);
+  const scrollStep = 1020; // Шаг прокрутки
+
+  const books = [
+    {
+      imageSrc: "img/img-card-1.png",
+      author: "Уолтер Айзексон",
+      title: "Илон Маск"
+    },
+    {
+      imageSrc: "img/img-card-2.png",
+      author: "Роберт Кийосаки",
+      title: "Богатый папа, бедный папа"
+    },
+    {
+      imageSrc: "img/img-card-3.png",
+      author: "Френк Герберт",
+      title: "Дюна"
+    },
+    {
+      imageSrc: "img/img-card-4.png",
+      author: "Харуки Мураками",
+      title: "Норвежский лес"
+    },
+    {
+      imageSrc: "img/img-card-5.png",
+      author: "Даниэль Канеман",
+      title: "Думай медленно... решай быстро"
+    },
+    {
+      imageSrc: "img/img-card-6.png",
+      author: "Евгений Понасенков",
+      title: "Первая научная история войны 1812 года. Третье издание"
+    },
+    {
+      imageSrc: "img/img-card-7.png",
+      author: "Александр Дюма",
+      title: "Граф Монте-кристо"
+    },
+    {
+      imageSrc: "img/img-card-8.png",
+      author: "Виктор Франкл",
+      title: "Сказать жизни «Да!»: психолог в концлагере"
+    },
+    {
+      imageSrc: "img/img-card-9.png",
+      author: "Л.Н. Толстой",
+      title: "Анна Каренина"
+    },
+    {
+      imageSrc: "img/img-card-10.png",
+      author: "Максим Ильяхов, Людмила Сарычева",
+      title: "Пиши, сокращай 2025: Как создавать сильный текст"
+    },
+    {
+      imageSrc: "img/img-card-11.png",
+      author: "Юваль Ной Харари",
+      title: "Sapiens. Краткая история человечества"
+    },
+    {
+      imageSrc: "img/img-card-12.png",
+      author: "Оскар Уайльд",
+      title: "Портрет Дориана Грея"
+    },
+    {
+      imageSrc: "img/img-card-13.png",
+      author: "Ольга Примаченко",
+      title: "С тобой я дома. Книга о том, как любить друг друга, оставаясь верными себе"
+    }
+  ];
+
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: -scrollStep,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({
+        left: scrollStep,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  return (
+    <div className="div-category">
+      <div className="div-h1-bestsellers">
+        <h1 className="h1-bestsellers"></h1>
+      </div>
+      <div className="div-box">
+        <button 
+          className="carousel-button-left-B" 
+          onClick={scrollLeft}
+        >
+          &#10094;
+        </button>
+        <div className="div-container" ref={scrollContainerRef}>
+          {books.map((book, index) => (
+            <BookCard
+              key={index}
+              imageSrc={book.imageSrc}
+              author={book.author}
+              title={book.title}
+            />
+          ))}
+        </div>
+        <button 
+          className="carousel-button-right-B" 
+          onClick={scrollRight}
+        >
+          &#10095;
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default BookCarousel_A;

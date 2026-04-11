@@ -1,0 +1,244 @@
+/**
+ * AudioBookCard Styles - премиальный дизайн карточек аудиокниг
+ * Включает glassmorphism, тени и анимации
+ */
+
+.audio-book-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.audio-book-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 107, 53, 0.3);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4),
+              0 0 30px rgba(255, 107, 53, 0.2);
+}
+
+/* Контейнер изображения */
+.audio-book-card__image-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.audio-book-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Оверлей */
+.audio-book-card__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.audio-book-card:hover .audio-book-card__overlay {
+  opacity: 1;
+}
+
+.audio-book-card__play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  background: linear-gradient(135deg, #FF6B35 0%, #E85D04 100%);
+  border: none;
+  border-radius: 50%;
+  color: #FFFFFF;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(255, 107, 53, 0.5);
+}
+
+.audio-book-card__play-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(255, 107, 53, 0.6);
+}
+
+/* Кнопка избранного */
+.audio-book-card__favorite-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: #FFFFFF;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+.audio-book-card:hover .audio-book-card__favorite-btn {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.audio-book-card__favorite-btn:hover {
+  background: rgba(255, 107, 53, 0.3);
+  border-color: rgba(255, 107, 53, 0.5);
+  color: #FF6B35;
+}
+
+.audio-book-card__favorite-btn--active {
+  background: rgba(255, 107, 53, 0.3);
+  border-color: rgba(255, 107, 53, 0.5);
+  color: #FF6B35;
+}
+
+.audio-book-card__favorite-btn--active svg {
+  fill: #FF6B35;
+}
+
+/* Иконка наушников */
+.audio-book-card__icon {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: #FF6B35;
+  font-size: 1rem;
+}
+
+/* Информация о книге */
+.audio-book-card__info {
+  padding: 1rem;
+}
+
+.audio-book-card__title {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.3s ease;
+}
+
+.audio-book-card__author {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 0.75rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Длительность */
+.audio-book-card__duration {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 1rem;
+}
+
+.audio-book-card__duration-icon {
+  font-size: 0.875rem;
+}
+
+/* Кнопка прослушивания */
+.audio-book-card__listen-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #FF6B35 0%, #E85D04 100%);
+  border: none;
+  border-radius: 12px;
+  color: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+}
+
+.audio-book-card__listen-btn:hover {
+  background: linear-gradient(135deg, #FF8C5A 0%, #FF6B35 100%);
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .audio-book-card {
+    border-radius: 12px;
+  }
+  
+  .audio-book-card__info {
+    padding: 0.875rem;
+  }
+  
+  .audio-book-card__title {
+    font-size: 0.9375rem;
+  }
+  
+  .audio-book-card__author {
+    font-size: 0.8125rem;
+  }
+  
+  .audio-book-card__favorite-btn {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  
+  .audio-book-card__play-btn {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.25rem;
+  }
+  
+  .audio-book-card__listen-btn {
+    padding: 0.625rem;
+    font-size: 0.8125rem;
+  }
+}

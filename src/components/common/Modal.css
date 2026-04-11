@@ -1,0 +1,218 @@
+/**
+ * Modal Styles - стили модального окна
+ * Glassmorphism эффект с поддержкой темы
+ */
+
+.modal__overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.modal {
+  position: relative;
+  background: var(--color-bg-dark-secondary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-heavy);
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Размеры */
+.modal--small {
+  width: 100%;
+  max-width: 400px;
+}
+
+.modal--medium {
+  width: 100%;
+  max-width: 600px;
+}
+
+.modal--large {
+  width: 100%;
+  max-width: 800px;
+}
+
+.modal--fullscreen {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  border-radius: 0;
+}
+
+/* Заголовок */
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+}
+
+.modal__title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: transparent;
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+}
+
+.modal__close:hover {
+  background: var(--color-bg-dark-tertiary);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.modal__close:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Тело */
+.modal__body {
+  padding: var(--spacing-lg);
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Футер */
+.modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-top: 1px solid var(--color-border-light);
+  flex-shrink: 0;
+}
+
+/* Светлая тема */
+.theme-light .modal__overlay {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.theme-light .modal {
+  background: var(--color-bg-white);
+  border-color: var(--color-border-dark);
+  box-shadow: var(--shadow-medium);
+}
+
+.theme-light .modal__header {
+  border-bottom-color: var(--color-border-dark);
+}
+
+.theme-light .modal__title {
+  color: var(--color-text-dark);
+}
+
+.theme-light .modal__close {
+  background: transparent;
+  border-color: var(--color-border-dark);
+  color: var(--color-text-secondary);
+}
+
+.theme-light .modal__close:hover {
+  background: var(--color-bg-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.theme-light .modal__footer {
+  border-top-color: var(--color-border-dark);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .modal__overlay {
+    padding: var(--spacing-md);
+    align-items: flex-end;
+  }
+  
+  .modal {
+    max-height: 85vh;
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  }
+  
+  .modal--small,
+  .modal--medium,
+  .modal--large {
+    max-width: 100%;
+  }
+  
+  .modal__header {
+    padding: var(--spacing-md);
+  }
+  
+  .modal__title {
+    font-size: 1.25rem;
+  }
+  
+  .modal__body {
+    padding: var(--spacing-md);
+  }
+  
+  .modal__footer {
+    padding: var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .modal__overlay {
+    padding: var(--spacing-sm);
+  }
+  
+  .modal__header {
+    padding: var(--spacing-sm);
+  }
+  
+  .modal__body {
+    padding: var(--spacing-sm);
+  }
+  
+  .modal__footer {
+    padding: var(--spacing-sm);
+    flex-direction: column;
+  }
+  
+  .modal__footer > * {
+    width: 100%;
+  }
+}
+
+/* Уменьшение анимаций для пользователей с prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .modal__close {
+    transition: none;
+  }
+}

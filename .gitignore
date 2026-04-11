@@ -1,0 +1,72 @@
+# Compiled binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+auth-service/auth-service
+books-service/books-service
+gateway/gateway
+auth-service/auth-server.exe
+books-service/book-service.exe
+
+# Dependency directories
+vendor/
+
+# Go workspace files
+go.work
+go.work.sum
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files (но можно оставить .env.example)
+.env
+!.env.example
+
+# Logs
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+
+# Docker volumes (если создаются локально)
+volumes/
+postgres_data/
+
+# Frontend (если будете добавлять позже – раскомментировать)
+# node_modules/
+# dist/
+# .next/
+# build/
+
+# Frontend (React/Vite)
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+
+# Backend binaries (у вас уже есть)
+*.exe
+auth-service/auth-service
+books-service/books-service
+gateway/gateway
+
+# IDE и OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

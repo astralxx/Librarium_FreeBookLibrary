@@ -1,0 +1,227 @@
+/**
+ * BookCarousel Styles - премиальный дизайн карусели книг
+ */
+
+.book-carousel {
+  position: relative;
+  margin-bottom: 3rem;
+}
+
+/* Заголовок */
+.book-carousel__header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.book-carousel__title {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.book-carousel__line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 107, 53, 0.5) 0%, transparent 100%);
+}
+
+/* Контейнер карусели */
+.book-carousel__container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Контейнер прокрутки */
+.book-carousel__scroll-container {
+  flex: 1;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.book-carousel__scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* Трек с карточками */
+.book-carousel__track {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.5rem;
+}
+
+.book-carousel__item {
+  flex: 0 0 auto;
+  width: 220px;
+}
+
+/* Кнопки навигации */
+.book-carousel__nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: #FFFFFF;
+  font-size: 1.5rem;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.book-carousel__nav-btn:hover {
+  background: rgba(255, 107, 53, 0.2);
+  border-color: rgba(255, 107, 53, 0.5);
+  color: #FF6B35;
+}
+
+.book-carousel__nav-btn--left {
+  left: -1.5rem;
+}
+
+.book-carousel__nav-btn--right {
+  right: -1.5rem;
+}
+
+/* Состояние загрузки */
+.book-carousel__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  gap: 1rem;
+}
+
+.book-carousel__spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 3px solid rgba(255, 107, 53, 0.2);
+  border-top-color: #FF6B35;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.book-carousel__loading p {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Состояние ошибки */
+.book-carousel__error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.book-carousel__error p {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 0.875rem;
+  color: #DC2626;
+}
+
+/* Адаптивность */
+@media (max-width: 1023px) {
+  .book-carousel__item {
+    width: 200px;
+  }
+  
+  .book-carousel__title {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .book-carousel {
+    margin-bottom: 2rem;
+  }
+  
+  .book-carousel__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .book-carousel__title {
+    font-size: 1.5rem;
+  }
+  
+  .book-carousel__line {
+    width: 100%;
+    background: linear-gradient(90deg, rgba(255, 107, 53, 0.5) 0%, transparent 100%);
+  }
+  
+  .book-carousel__track {
+    gap: 1rem;
+    padding: 0.5rem 0.5rem;
+  }
+  
+  .book-carousel__item {
+    width: 140px; /* Reduced width for mobile */
+    flex: 0 0 auto;
+  }
+  
+  .book-carousel__nav-btn {
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.25rem;
+  }
+  
+  .book-carousel__nav-btn--left {
+    left: -1rem;
+  }
+  
+  .book-carousel__nav-btn--right {
+    right: -1rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .book-carousel__item {
+    width: 130px; /* Even smaller for very small screens */
+  }
+  
+  .book-carousel__title {
+    font-size: 1.25rem;
+  }
+  
+  .book-carousel__nav-btn {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+  
+  .book-carousel__track {
+    gap: 0.75rem;
+  }
+  
+  .book-carousel__scroll-container {
+    padding: 0 1rem; /* Add padding to prevent items from being cut off */
+  }
+}

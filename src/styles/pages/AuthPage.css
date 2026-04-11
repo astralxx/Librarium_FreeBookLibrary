@@ -1,0 +1,291 @@
+/**
+ * AuthPage Styles - минималистичный дизайн страницы авторизации
+ * Включает glassmorphism эффект и анимации
+ * Используется только шрифт Inter
+ */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gradient-dark);
+  padding: var(--spacing-xl);
+  padding-top: 100px;
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 420px;
+}
+
+.auth-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-2xl);
+  padding: var(--spacing-2xl);
+  box-shadow: var(--shadow-heavy);
+}
+
+/* Заголовок */
+.auth-header {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.auth-logo {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.auth-title {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.auth-subtitle {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+/* Форма */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.form-input {
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  transition: all var(--transition-normal) ease;
+}
+
+.form-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.1);
+}
+
+.form-input--error {
+  border-color: #DC2626;
+}
+
+.form-input--error:focus {
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+}
+
+/* Ошибки */
+.form-error {
+  font-size: 0.75rem;
+  color: #DC2626;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.form-error-icon {
+  font-size: 0.875rem;
+}
+
+/* Чекбокс */
+.form-checkbox-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+}
+
+.form-checkbox input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.form-checkbox-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.form-link {
+  font-size: 0.875rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--transition-normal) ease;
+}
+
+.form-link:hover {
+  color: var(--color-primary-light);
+  text-decoration: underline;
+}
+
+/* Кнопка отправки */
+.auth-submit {
+  width: 100%;
+  padding: var(--spacing-md);
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+  margin-top: var(--spacing-md);
+}
+
+.auth-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.auth-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Разделитель */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin: var(--spacing-xl) 0;
+}
+
+.auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.auth-divider-text {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+/* Google кнопка */
+.auth-google-btn {
+  width: 100%;
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-normal) ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+.auth-google-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.auth-google-icon {
+  font-size: 1.25rem;
+}
+
+/* Переключение форм */
+.auth-switch {
+  text-align: center;
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-xl);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.auth-switch-text {
+  font-size: 0.9375rem;
+  color: var(--color-text-secondary);
+}
+
+.auth-switch-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-normal) ease;
+}
+
+.auth-switch-link:hover {
+  color: var(--color-primary-light);
+  text-decoration: underline;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .auth-page {
+    padding: var(--spacing-lg);
+    padding-top: 80px;
+  }
+  
+  .auth-card {
+    padding: var(--spacing-xl);
+  }
+  
+  .auth-logo {
+    font-size: 1.75rem;
+  }
+  
+  .auth-title {
+    font-size: 1.5rem;
+  }
+  
+  .form-checkbox-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: var(--spacing-lg);
+  }
+  
+  .auth-logo {
+    font-size: 1.5rem;
+  }
+  
+  .auth-title {
+    font-size: 1.25rem;
+  }
+}

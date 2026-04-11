@@ -1,0 +1,179 @@
+main{
+    margin-top: 50px;
+}
+
+.chart-container {
+    width: 500px;
+    margin: 0 auto;
+}
+
+.div-stats h1{
+    text-align: center;
+    margin-top: 70px;
+    color: #FFF;
+}
+
+.div-stats{
+    width: 100%;
+    display: flex;
+    flex-flow: column wrap;
+    justify-content: center;
+}
+
+.div-pie-charts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 30px;
+}
+
+.chart-container {
+    width: 400px;
+    max-width: 100%;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.chart-container h2 {
+    color: #fff;
+    font-family: "Montserrat", serif;
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+.books-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    font-family: 'Montserrat', sans-serif;
+    color: #FFFFFF;
+    padding: 20px;
+}
+
+.books-container h1 {
+    text-align: center;
+    margin: 30px;
+    color: #FFF;
+}
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.search-box {
+    display: flex;
+    flex-grow: 1;
+    max-width: 500px;
+}
+
+.search-box input {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px 0 0 5px;
+    background: #2F2F2F;
+    color: #FFFFFF;
+}
+
+.search-box button {
+    padding: 10px 20px;
+    background: #FF4D00;
+    color: white;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+}
+
+.filters select {
+    padding: 10px;
+    background: #2F2F2F;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-left: 10px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.books-container th, .books-container td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #444;
+}
+
+.books-container th {
+    background-color: #252525;
+    color: #FFF;
+    cursor: pointer;
+    position: relative;
+}
+
+.books-container th:hover {
+    background-color: #333;
+}
+
+.books-container th::after {
+    content: '↕';
+    position: absolute;
+    right: 10px;
+    color: #777;
+}
+
+.books-container th.asc::after {
+    content: '↑';
+    color: #FF4D00;
+}
+
+.books-container th.desc::after {
+    content: '↓';
+    color: #FF4D00;
+}
+
+.books-container tr:hover {
+    background-color: #252525;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.pagination button {
+    padding: 8px 15px;
+    background: #FF4D00;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.pagination button:disabled {
+    background: #555;
+    cursor: not-allowed;
+}
+
+@media (max-width: 1100px) {
+    .div-pie-charts {
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .chart-container {
+        width: 100%;
+    }
+}
