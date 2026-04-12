@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS books (
 CREATE TABLE IF NOT EXISTS reviews (
     review_id SERIAL PRIMARY KEY,
     book_id INT REFERENCES books(book_id) ON DELETE CASCADE,
-    user_id INT NOT NULL,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
     rating INT CHECK (rating BETWEEN 1 AND 5),
     comment TEXT,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS reviews (
 -- Orders
 CREATE TABLE IF NOT EXISTS orders (
     order_id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
     book_id INT REFERENCES books(book_id) ON DELETE SET NULL,
     quantity INT DEFAULT 1,
     status VARCHAR(50) DEFAULT 'pending',

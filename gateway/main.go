@@ -18,12 +18,14 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var jwtKey []byte
-var authServiceURL *url.URL
-var booksServiceURL *url.URL
-var statsServiceURL *url.URL
-var frontendURL string
-var corsAllowedOrigins []string
+var (
+	jwtKey             []byte
+	authServiceURL     *url.URL
+	booksServiceURL    *url.URL
+	statsServiceURL    *url.URL
+	frontendURL        string
+	corsAllowedOrigins []string
+)
 
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
@@ -33,7 +35,7 @@ func getEnv(key, defaultValue string) string {
 }
 
 func init() {
-	// Загрузка .env файла
+	// Загрузка .env
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using environment variables")
 	}
@@ -74,7 +76,6 @@ func init() {
 }
 
 func main() {
-	// Прокси
 	authProxy := httputil.NewSingleHostReverseProxy(authServiceURL)
 	booksProxy := httputil.NewSingleHostReverseProxy(booksServiceURL)
 	statsProxy := httputil.NewSingleHostReverseProxy(statsServiceURL)
@@ -82,63 +83,19 @@ func main() {
 	r := mux.NewRouter()
 
 	// ========== Маршруты для auth-service ==========
-	// Регистрация
-	r.HandleFunc("/auth/register", func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = "/register"
-		authProxy.ServeHTTP(w, r)
-	}).Methods("POST", "OPTIONS")
-
-	// Логин
-	r.HandleFunc("/auth/login", func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = "/login"
-		authProxy.ServeHTTP(w, r)
-	}).Methods("POST", "OPTIONS")
-
-	// Выход
-	r.HandleFunc("/auth/logout", func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = "/logout"
-		authProxy.ServeHTTP(w, r)
-	}).Methods("POST", "OPTIONS")
-
-	// Профиль (требует аутентификации)
-	r.HandleFunc("/auth/profile", func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = "/profile"
-		authProxy.ServeHTTP(w, r)
-	}).Methods("GET", "OPTIONS")
-
-	// Yandex OAuth — начало
-	r.HandleFunc("/auth/yandex", func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = "/auth/yandex"
-		authProxy.ServeHTTP(w, r)
-	}).Methods("GET", "OPTIONS")
-
-	// Yandex OAuth — callback
-	r.HandleFunc("/auth/yandex/callback", func(w http.ResponseWriter, r *http.Request) {
-		r.URL.Path = "/auth/yandex/callback"
-		authProxy.ServeHTTP(w, r)
-	}).Methods("GET", "OPTIONS")
+	r.HandleFunc("/auth/register", proxyTo(authProxy, "/register")).Methods("POST", "OPTIONS")
+	r.HandleFunc("/auth/login", proxyTo(authProxy, "/login")).Methods("POST", "OPTIONS")
+	r.HandleFunc("/auth/logout", proxyTo(authProxy, "/logout")).Methods("POST", "OPTIONS")
+	r.HandleFunc("/auth/profile", proxyTo(authProxy, "/profile")).Methods("GET", "OPTIONS")
+	r.HandleFunc("/auth/yandex", proxyTo(authProxy, "/auth/yandex")).Methods("GET", "OPTIONS")
+	r.HandleFunc("/auth/yandex/callback", proxyTo(authProxy, "/auth/yandex/callback")).Methods("GET", "OPTIONS")
 
 	// ========== Маршруты для books-service ==========
-	// Все маршруты /api/books...
-	r.HandleFunc("/api/books", func(w http.ResponseWriter, r *http.Request) {
-		booksProxy.ServeHTTP(w, r)
-	}).Methods("GET", "OPTIONS")
-
-	r.HandleFunc("/api/books/{id}", func(w http.ResponseWriter, r *http.Request) {
-		booksProxy.ServeHTTP(w, r)
-	}).Methods("GET", "OPTIONS")
-
-	r.HandleFunc("/api/books/search", func(w http.ResponseWriter, r *http.Request) {
-		booksProxy.ServeHTTP(w, r)
-	}).Methods("GET", "OPTIONS")
-
-	r.HandleFunc("/books/category", func(w http.ResponseWriter, r *http.Request) {
-		booksProxy.ServeHTTP(w, r)
-	}).Methods("GET", "OPTIONS")
-
-	r.HandleFunc("/books/featured", func(w http.ResponseWriter, r *http.Request) {
-		booksProxy.ServeHTTP(w, r)
-	}).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/books", booksProxy.ServeHTTP).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/books/{id}", booksProxy.ServeHTTP).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/books/search", booksProxy.ServeHTTP).Methods("GET", "OPTIONS")
+	r.HandleFunc("/books/category", booksProxy.ServeHTTP).Methods("GET", "OPTIONS")
+	r.HandleFunc("/books/featured", booksProxy.ServeHTTP).Methods("GET", "OPTIONS")
 
 	// ========== Статистика (требует токен) ==========
 	r.PathPrefix("/api/stats/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -147,43 +104,14 @@ func main() {
 			json.NewEncoder(w).Encode(map[string]string{"error": "Unauthorized"})
 			return
 		}
-		// Убираем префикс /api/stats при проксировании
 		r.URL.Path = strings.TrimPrefix(r.URL.Path, "/api/stats")
 		statsProxy.ServeHTTP(w, r)
 	})
 
-	// ========== Специальный маршрут для /profile с передачей токена через query ==========
-	r.HandleFunc("/profile", func(w http.ResponseWriter, r *http.Request) {
-		// Если токен передан в query параметре ?token=...
-		if token := r.URL.Query().Get("token"); token != "" {
-			if validateJWT(token) {
-				// Устанавливаем cookie
-				cookieSecure := os.Getenv("COOKIE_SECURE") == "true"
-				cookieSameSite := http.SameSiteLaxMode
-				if os.Getenv("COOKIE_SAMESITE") == "None" {
-					cookieSameSite = http.SameSiteNoneMode
-				}
-				http.SetCookie(w, &http.Cookie{
-					Name:     "token",
-					Value:    token,
-					Expires:  time.Now().Add(24 * time.Hour),
-					HttpOnly: true,
-					Secure:   cookieSecure,
-					SameSite: cookieSameSite,
-					Path:     "/",
-				})
-				http.Redirect(w, r, frontendURL+"/profile", http.StatusTemporaryRedirect)
-				return
-			}
-			http.Error(w, "Invalid token", http.StatusUnauthorized)
-			return
-		}
-		// Иначе проксируем в auth-service /profile
-		r.URL.Path = "/profile"
-		authProxy.ServeHTTP(w, r)
-	}).Methods("GET", "OPTIONS")
+	// ========== Специальный маршрут /profile с token в query ==========
+	r.HandleFunc("/profile", profileWithTokenHandler).Methods("GET", "OPTIONS")
 
-	// ========== Middleware CORS ==========
+	// Middleware
 	handler := corsMiddleware(r)
 
 	serverPort := getEnv("SERVER_PORT", "8080")
@@ -215,7 +143,46 @@ func main() {
 	log.Println("Gateway exited")
 }
 
-// corsMiddleware обрабатывает CORS заголовки и preflight-запросы
+// ========== Вспомогательные функции ==========
+
+// proxyTo — удобная обёртка для изменения пути перед проксированием
+func proxyTo(proxy *httputil.ReverseProxy, path string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		r.URL.Path = path
+		proxy.ServeHTTP(w, r)
+	}
+}
+
+func profileWithTokenHandler(w http.ResponseWriter, r *http.Request) {
+	if token := r.URL.Query().Get("token"); token != "" {
+		if validateJWT(token) {
+			cookieSecure := os.Getenv("COOKIE_SECURE") == "true"
+			cookieSameSite := http.SameSiteLaxMode
+			if os.Getenv("COOKIE_SAMESITE") == "None" {
+				cookieSameSite = http.SameSiteNoneMode
+			}
+			http.SetCookie(w, &http.Cookie{
+				Name:     "token",
+				Value:    token,
+				Expires:  time.Now().Add(24 * time.Hour),
+				HttpOnly: true,
+				Secure:   cookieSecure,
+				SameSite: cookieSameSite,
+				Path:     "/",
+			})
+			http.Redirect(w, r, frontendURL+"/profile", http.StatusTemporaryRedirect)
+			return
+		}
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return
+	}
+	// Иначе обычный прокси в auth-service
+	r.URL.Path = "/profile"
+	authProxy := httputil.NewSingleHostReverseProxy(authServiceURL) // используем глобальную переменную
+	authProxy.ServeHTTP(w, r)
+}
+
+// corsMiddleware
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
@@ -241,10 +208,8 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// verifyToken проверяет наличие и валидность JWT токена (из cookie или заголовка Authorization)
-// Для публичных маршрутов возвращает true без проверки токена
 func verifyToken(r *http.Request) bool {
-	// Публичные маршруты, не требующие токена
+	// Публичные маршруты
 	if r.Method == "GET" && (strings.HasPrefix(r.URL.Path, "/api/books") ||
 		strings.HasPrefix(r.URL.Path, "/books/") ||
 		r.URL.Path == "/books/featured" ||
@@ -257,26 +222,18 @@ func verifyToken(r *http.Request) bool {
 		r.URL.Path == "/auth/yandex/callback") {
 		return true
 	}
-	if r.Method == "GET" && r.URL.Path == "/profile" {
-		// /profile может быть публичным только если нет токена? нет, требует проверки
-		// но здесь вызывается verifyToken только для /api/stats, а для /profile проверка внутри другого обработчика
-		return false
-	}
 
-	// Проверка токена в cookie
+	// Проверка токена
 	if cookie, err := r.Cookie("token"); err == nil && cookie != nil {
 		return validateJWT(cookie.Value)
 	}
-	// Проверка токена в заголовке Authorization
-	authHeader := r.Header.Get("Authorization")
-	if authHeader != "" {
+	if authHeader := r.Header.Get("Authorization"); authHeader != "" {
 		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 		return validateJWT(tokenString)
 	}
 	return false
 }
 
-// validateJWT проверяет подпись и валидность JWT
 func validateJWT(tokenString string) bool {
 	claims := &jwt.RegisteredClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
