@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -25,7 +23,6 @@ services:
       - "3000:3000"
     env_file: ./auth-service/.env
     environment:
-      # Переопределяем для работы внутри Docker (чтобы сервис видел postgres)
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: postgres
@@ -42,7 +39,6 @@ services:
       - "3001:3001"
     env_file: ./books-service/.env
     environment:
-      # Переопределяем для работы внутри Docker
       DB_HOST: postgres
       DB_PORT: 5432
       DB_USER: postgres
