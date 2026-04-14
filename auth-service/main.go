@@ -25,7 +25,7 @@ import (
 	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 
-	"auth-service/internal/db" // ← НОВЫЙ ИМПОРТ: общий слой подключения к БД
+	"auth-service/internal/db"
 )
 
 // ==================== CONSTANTS ====================
@@ -626,12 +626,10 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 
 // ==================== MAIN ====================
 func main() {
-	// Загрузка .env
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using environment variables")
 	}
 
-	// JWT Secret
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		log.Fatal("JWT_SECRET environment variable is required")
@@ -643,7 +641,6 @@ func main() {
 
 	frontendURL = getEnv("FRONTEND_URL", "http://localhost:5173")
 
-	// Yandex OAuth Config
 	yandexOauthConfig = &oauth2.Config{
 		RedirectURL:  getEnv("YANDEX_REDIRECT_URL", "http://localhost:3000/auth/yandex/callback"),
 		ClientID:     os.Getenv("YANDEX_CLIENT_ID"),
@@ -655,19 +652,14 @@ func main() {
 		},
 	}
 
-	// ==================== НОВОЕ ПОДКЛЮЧЕНИЕ К БД ====================
 	dbConn, err := db.NewConnection()
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer dbConn.Close()
 
-	log.Println("✅ Connected to PostgreSQL (auth service)!")
-
-	// Создаём репозиторий
 	repo := NewUserRepository(dbConn)
 
-	// Маршруты
 	r := mux.NewRouter()
 	r.Use(loggingMiddleware)
 	r.Use(rateLimitMiddleware)
@@ -679,7 +671,8 @@ func main() {
 	r.HandleFunc("/profile", authMiddleware(profileHandler)).Methods("GET")
 	r.HandleFunc("/logout", authMiddleware(logoutHandler)).Methods("POST")
 
-	serverHost := getEnv("SERVER_HOST", "127.0.0.1")
+	// ==================== КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ ====================
+	serverHost := getEnv("SERVER_HOST", "0.0.0.0") // ← ДОЛЖНО БЫТЬ 0.0.0.0
 	serverPort := getEnv("SERVER_PORT", "3000")
 	addr := fmt.Sprintf("%s:%s", serverHost, serverPort)
 
@@ -710,7 +703,7 @@ func main() {
 	log.Println("Auth service exited")
 }
 
-// getEnv — вспомогательная функция (оставлена для совместимости с остальным кодом)
+// getEnv
 func getEnv(key, defaultValue string) string {
 	if value := os.Getenv(key); value != "" {
 		return value
