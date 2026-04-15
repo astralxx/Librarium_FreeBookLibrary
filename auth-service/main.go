@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -17,13 +16,12 @@ import (
 	"syscall"
 	"time"
 
-	"golang.org/x/oauth2"
-
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/oauth2"
 
 	"auth-service/internal/db"
 )
@@ -39,6 +37,9 @@ const (
 	RateLimitWindow     = 15 * time.Minute
 	MaxLoginAttempts    = 5
 	MaxRegisterAttempts = 3
+
+	AccessTokenTTL  = 15 * time.Minute
+	RefreshTokenTTL = 30 * 24 * time.Hour
 )
 
 // ==================== STRUCTS ====================
@@ -52,6 +53,11 @@ type Claims struct {
 	UserID   int    `json:"user_id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
+	jwt.RegisteredClaims
+}
+
+type RefreshTokenClaims struct {
+	UserID int `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
@@ -73,6 +79,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
+// Существующие методы (оставлены без изменений)
 func (r *UserRepository) UserExists(ctx context.Context, username, email string) (bool, error) {
 	var exists bool
 	err := r.db.QueryRowContext(ctx, `
@@ -110,6 +117,34 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (id i
 		return 0, "", "", false, nil
 	}
 	return id, username, dbEmail, true, err
+}
+
+// === Новые методы для refresh-токенов и logout ===
+func (r *UserRepository) CreateRefreshToken(ctx context.Context, userID int, token string, expiresAt time.Time) error {
+	_, err := r.db.ExecContext(ctx, `
+		INSERT INTO refresh_tokens (user_id, token, expires_at)
+		VALUES ($1, $2, $3)`,
+		userID, token, expiresAt)
+	return err
+}
+
+func (r *UserRepository) RevokeRefreshToken(ctx context.Context, token string) error {
+	_, err := r.db.ExecContext(ctx, `UPDATE refresh_tokens SET revoked = TRUE WHERE token = $1`, token)
+	return err
+}
+
+func (r *UserRepository) IsRefreshTokenValid(ctx context.Context, token string) (userID int, valid bool, err error) {
+	var expiresAt time.Time
+	var revoked bool
+	err = r.db.QueryRowContext(ctx, `
+		SELECT user_id, expires_at, revoked 
+		FROM refresh_tokens 
+		WHERE token = $1`,
+		token).Scan(&userID, &expiresAt, &revoked)
+	if err == sql.ErrNoRows || revoked || time.Now().After(expiresAt) {
+		return 0, false, nil
+	}
+	return userID, true, err
 }
 
 // ==================== GLOBAL VARS ====================
@@ -275,21 +310,25 @@ func addAttempt(ip, action string) {
 	}
 }
 
+// Обновлённый authMiddleware — поддерживает cookie "access_token" и Bearer
 func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		c, err := r.Cookie("token")
-		if err != nil {
-			if err == http.ErrNoCookie {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
-				return
-			}
-			http.Error(w, "Bad request", http.StatusBadRequest)
+		var tokenStr string
+
+		// 1. Проверяем cookie
+		if c, err := r.Cookie("access_token"); err == nil && c.Value != "" {
+			tokenStr = c.Value
+		} else if authHeader := r.Header.Get("Authorization"); authHeader != "" {
+			// 2. Поддержка Bearer
+			tokenStr = strings.TrimPrefix(authHeader, "Bearer ")
+		}
+
+		if tokenStr == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
-		tokenStr := c.Value
 		claims := &Claims{}
-
 		token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -308,8 +347,8 @@ func authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 }
 
 // ==================== JWT HELPERS ====================
-func generateToken(userID int, username, email string) (string, error) {
-	expirationTime := time.Now().Add(1 * time.Hour)
+func generateAccessToken(userID int, username, email string) (string, error) {
+	expirationTime := time.Now().Add(AccessTokenTTL)
 	claims := &Claims{
 		UserID:   userID,
 		Username: username,
@@ -323,27 +362,42 @@ func generateToken(userID int, username, email string) (string, error) {
 			ID:        generateRandomString(16),
 		},
 	}
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtKey)
 }
 
-func setAuthCookie(w http.ResponseWriter, tokenString string) {
+func generateRefreshToken(userID int) (string, error) {
+	expirationTime := time.Now().Add(RefreshTokenTTL)
+	claims := &RefreshTokenClaims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ID:        generateRandomString(32),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtKey)
+}
+
+func setAuthCookies(w http.ResponseWriter, access, refresh string) {
 	cookieSecure := os.Getenv("COOKIE_SECURE") == "true"
 	cookieSameSite := http.SameSiteLaxMode
 	if os.Getenv("COOKIE_SAMESITE") == "None" {
 		cookieSameSite = http.SameSiteNoneMode
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
-		Value:    tokenString,
-		Expires:  time.Now().Add(1 * time.Hour),
-		HttpOnly: true,
-		Secure:   cookieSecure,
-		SameSite: cookieSameSite,
-		Path:     "/",
-	})
+	for name, value := range map[string]string{"access_token": access, "refresh_token": refresh} {
+		http.SetCookie(w, &http.Cookie{
+			Name:     name,
+			Value:    value,
+			Expires:  time.Now().Add(RefreshTokenTTL),
+			HttpOnly: true,
+			Secure:   cookieSecure,
+			SameSite: cookieSameSite,
+			Path:     "/",
+		})
+	}
 }
 
 // ==================== HANDLERS ====================
@@ -390,19 +444,16 @@ func registerHandler(repo *UserRepository) http.HandlerFunc {
 			return
 		}
 
-		tokenString, err := generateToken(userID, user.Username, user.Email)
-		if err != nil {
-			http.Error(w, "Error generating token", http.StatusInternalServerError)
-			return
-		}
+		access, _ := generateAccessToken(userID, user.Username, user.Email)
+		refresh, _ := generateRefreshToken(userID)
+		_ = repo.CreateRefreshToken(r.Context(), userID, refresh, time.Now().Add(RefreshTokenTTL))
 
-		setAuthCookie(w, tokenString)
+		setAuthCookies(w, access, refresh)
 		log.Printf("User registered: id=%d", userID)
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"message": "User registered and authenticated!",
-			"token":   tokenString,
 			"user": map[string]string{
 				"username": user.Username,
 				"email":    user.Email,
@@ -448,20 +499,16 @@ func loginHandler(repo *UserRepository) http.HandlerFunc {
 			return
 		}
 
-		tokenString, err := generateToken(id, dbUsername, dbEmail)
-		if err != nil {
-			http.Error(w, "Error generating token", http.StatusInternalServerError)
-			return
-		}
+		access, _ := generateAccessToken(id, dbUsername, dbEmail)
+		refresh, _ := generateRefreshToken(id)
+		_ = repo.CreateRefreshToken(r.Context(), id, refresh, time.Now().Add(RefreshTokenTTL))
 
-		setAuthCookie(w, tokenString)
+		setAuthCookies(w, access, refresh)
 		log.Printf("User logged in: id=%d", id)
 
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"message": "Login successful!",
-			"token":   tokenString,
 			"user": map[string]string{
 				"username": dbUsername,
 				"email":    dbEmail,
@@ -470,26 +517,87 @@ func loginHandler(repo *UserRepository) http.HandlerFunc {
 	}
 }
 
-func yandexLoginHandler(w http.ResponseWriter, r *http.Request) {
-	url := yandexOauthConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	log.Println("Redirecting to Yandex OAuth")
-	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
+func refreshHandler(repo *UserRepository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("refresh_token")
+		if err != nil || cookie.Value == "" {
+			http.Error(w, "No refresh token", http.StatusUnauthorized)
+			return
+		}
+
+		userID, valid, err := repo.IsRefreshTokenValid(r.Context(), cookie.Value)
+		if err != nil || !valid {
+			http.Error(w, "Invalid or expired refresh token", http.StatusUnauthorized)
+			return
+		}
+
+		// Получаем данные пользователя
+		var username, email string
+		err = repo.db.QueryRowContext(r.Context(), `SELECT username, email FROM users WHERE id = $1`, userID).
+			Scan(&username, &email)
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		access, _ := generateAccessToken(userID, username, email)
+		refresh, _ := generateRefreshToken(userID)
+		_ = repo.CreateRefreshToken(r.Context(), userID, refresh, time.Now().Add(RefreshTokenTTL))
+
+		setAuthCookies(w, access, refresh)
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"message": "Tokens refreshed successfully"})
+	}
 }
 
-func logoutHandler(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
-		Value:    "",
-		Expires:  time.Unix(0, 0),
-		HttpOnly: true,
-		Secure:   os.Getenv("COOKIE_SECURE") == "true",
-		SameSite: http.SameSiteLaxMode,
-		Path:     "/",
-	})
+func logoutHandler(repo *UserRepository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, _ := r.Cookie("refresh_token")
+		if cookie != nil && cookie.Value != "" {
+			_ = repo.RevokeRefreshToken(r.Context(), cookie.Value)
+		}
+
+		// Удаляем cookies
+		for _, name := range []string{"access_token", "refresh_token"} {
+			http.SetCookie(w, &http.Cookie{
+				Name:     name,
+				Value:    "",
+				Expires:  time.Unix(0, 0),
+				HttpOnly: true,
+				Secure:   os.Getenv("COOKIE_SECURE") == "true",
+				SameSite: http.SameSiteLaxMode,
+				Path:     "/",
+			})
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"message": "Logged out successfully"})
+	}
+}
+
+func profileHandler(w http.ResponseWriter, r *http.Request) {
+	claims, ok := r.Context().Value("claims").(*Claims)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Logged out successfully"})
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"username": claims.Username,
+		"email":    claims.Email,
+		"message":  "Welcome to your profile!",
+	})
+}
+
+// ==================== YANDEX OAUTH ====================
+func yandexLoginHandler(w http.ResponseWriter, r *http.Request) {
+	state := generateRandomString(32)
+	// В production можно сохранить state в БД для проверки (oauth_states)
+	url := yandexOauthConfig.AuthCodeURL(state, oauth2.AccessTypeOffline)
+	log.Printf("Yandex OAuth redirect to: %s", url)
+	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func yandexCallbackHandler(repo *UserRepository) http.HandlerFunc {
@@ -510,17 +618,10 @@ func yandexCallbackHandler(repo *UserRepository) http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 		defer cancel()
 
-		userInfoURL := "https://login.yandex.ru/info?format=json"
-		req, err := http.NewRequestWithContext(ctx, "GET", userInfoURL, nil)
-		if err != nil {
-			log.Printf("Failed to create user info request: %v", err)
-			http.Error(w, "Authentication failed", http.StatusInternalServerError)
-			return
-		}
+		req, _ := http.NewRequestWithContext(ctx, "GET", "https://login.yandex.ru/info?format=json", nil)
 		req.Header.Set("Authorization", "OAuth "+token.AccessToken)
 
-		client := &http.Client{Timeout: 10 * time.Second}
-		resp, err := client.Do(req)
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			log.Printf("Failed to get user info: %v", err)
 			http.Error(w, "Authentication failed", http.StatusInternalServerError)
@@ -533,95 +634,51 @@ func yandexCallbackHandler(repo *UserRepository) http.HandlerFunc {
 			Email string `json:"default_email"`
 			Login string `json:"login"`
 		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Printf("Failed to read user info response: %v", err)
-			http.Error(w, "Authentication failed", http.StatusInternalServerError)
-			return
-		}
-
-		if err := json.Unmarshal(body, &userInfo); err != nil {
+		if err := json.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
 			log.Printf("Failed to decode user info: %v", err)
 			http.Error(w, "Authentication failed", http.StatusInternalServerError)
 			return
 		}
 
 		if userInfo.Email == "" {
-			userInfo.Email = fmt.Sprintf("yandex_user_%s@yandex-temp.com", userInfo.ID)
+			userInfo.Email = fmt.Sprintf("yandex_%s@yandex.ru", userInfo.ID)
 		}
 
-		if !isValidEmail(userInfo.Email) {
-			http.Error(w, "Invalid email from Yandex", http.StatusBadRequest)
-			return
-		}
-
-		_, username, _, exists, err := repo.GetUserByEmail(ctx, userInfo.Email)
+		id, username, _, exists, err := repo.GetUserByEmail(ctx, userInfo.Email)
 		if err != nil {
-			log.Printf("Database error in yandexCallbackHandler: %v", err)
+			log.Printf("Database error: %v", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 
 		var userID int
-		user := User{Email: userInfo.Email}
-
 		if !exists {
 			username = sanitizeInput(userInfo.Login)
 			if username == "" {
-				username = sanitizeInput(strings.Split(userInfo.Email, "@")[0])
+				username = strings.Split(userInfo.Email, "@")[0]
 			}
-
-			var usernameExists bool
-			err = repo.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`, username).Scan(&usernameExists)
-			if err != nil {
-				log.Printf("Database error in yandexCallbackHandler: %v", err)
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-				return
-			}
-
-			if usernameExists {
+			// Уникальность username
+			var tmpExists bool
+			_ = repo.db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)`, username).Scan(&tmpExists)
+			if tmpExists {
 				username = fmt.Sprintf("%s_%d", username, time.Now().UnixNano()%10000)
 			}
 
-			randomPassword := "yandex_auth_" + generateRandomString(32)
-			hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(randomPassword), bcrypt.DefaultCost)
-
-			userID, err = repo.CreateUser(ctx, username, userInfo.Email, string(hashedPassword))
-			if err != nil {
-				log.Printf("Failed to create user: %v", err)
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-				return
-			}
-			user.Username = username
+			hashed, _ := bcrypt.GenerateFromPassword([]byte("yandex_auth_"+generateRandomString(32)), bcrypt.DefaultCost)
+			userID, _ = repo.CreateUser(ctx, username, userInfo.Email, string(hashed))
 		} else {
-			user.Username = username
+			userID = id
+			username = username // уже из БД
 		}
 
-		tokenString, err := generateToken(userID, user.Username, user.Email)
-		if err != nil {
-			http.Error(w, "Error generating token", http.StatusInternalServerError)
-			return
-		}
+		access, _ := generateAccessToken(userID, username, userInfo.Email)
+		refresh, _ := generateRefreshToken(userID)
+		_ = repo.CreateRefreshToken(ctx, userID, refresh, time.Now().Add(RefreshTokenTTL))
 
-		setAuthCookie(w, tokenString)
+		setAuthCookies(w, access, refresh)
+
 		http.Redirect(w, r, frontendURL+"/profile", http.StatusTemporaryRedirect)
 	}
-}
-
-func profileHandler(w http.ResponseWriter, r *http.Request) {
-	claims, ok := r.Context().Value("claims").(*Claims)
-	if !ok {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"username": claims.Username,
-		"email":    claims.Email,
-		"message":  "Welcome to your profile!",
-	})
 }
 
 // ==================== MAIN ====================
@@ -630,19 +687,21 @@ func main() {
 		log.Println("No .env file found, using environment variables")
 	}
 
+	// JWT
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		log.Fatal("JWT_SECRET environment variable is required")
 	}
 	if len(jwtSecret) < 32 {
-		log.Fatalf("JWT_SECRET must be at least 32 characters (current length: %d)", len(jwtSecret))
+		log.Fatalf("JWT_SECRET must be at least 32 characters (current: %d)", len(jwtSecret))
 	}
 	jwtKey = []byte(jwtSecret)
 
 	frontendURL = getEnv("FRONTEND_URL", "http://localhost:5173")
 
+	// Yandex OAuth
 	yandexOauthConfig = &oauth2.Config{
-		RedirectURL:  getEnv("YANDEX_REDIRECT_URL", "http://localhost:3000/auth/yandex/callback"),
+		RedirectURL:  getEnv("YANDEX_REDIRECT_URL", "http://localhost:8080/auth/yandex/callback"),
 		ClientID:     os.Getenv("YANDEX_CLIENT_ID"),
 		ClientSecret: os.Getenv("YANDEX_CLIENT_SECRET"),
 		Scopes:       []string{"login:email", "login:info"},
@@ -652,6 +711,7 @@ func main() {
 		},
 	}
 
+	// DB
 	dbConn, err := db.NewConnection()
 	if err != nil {
 		log.Fatal(err)
@@ -660,31 +720,36 @@ func main() {
 
 	repo := NewUserRepository(dbConn)
 
+	// Router
 	r := mux.NewRouter()
 	r.Use(loggingMiddleware)
 	r.Use(rateLimitMiddleware)
 
+	// Auth routes
 	r.HandleFunc("/register", registerHandler(repo)).Methods("POST")
 	r.HandleFunc("/login", loginHandler(repo)).Methods("POST")
+	r.HandleFunc("/refresh", refreshHandler(repo)).Methods("POST")
+	r.HandleFunc("/logout", authMiddleware(logoutHandler(repo))).Methods("POST")
+	r.HandleFunc("/profile", authMiddleware(profileHandler)).Methods("GET")
+
+	// Yandex OAuth
 	r.HandleFunc("/auth/yandex", yandexLoginHandler).Methods("GET")
 	r.HandleFunc("/auth/yandex/callback", yandexCallbackHandler(repo)).Methods("GET")
-	r.HandleFunc("/profile", authMiddleware(profileHandler)).Methods("GET")
-	r.HandleFunc("/logout", authMiddleware(logoutHandler)).Methods("POST")
 
-	// ==================== КЛЮЧЕВОЕ ИСПРАВЛЕНИЕ ====================
-	serverHost := getEnv("SERVER_HOST", "0.0.0.0") // ← ДОЛЖНО БЫТЬ 0.0.0.0
+	// Bind address — КРИТИЧНОЕ ИСПРАВЛЕНИЕ ДЛЯ DOCKER
+	serverHost := getEnv("SERVER_HOST", "0.0.0.0")
 	serverPort := getEnv("SERVER_PORT", "3000")
 	addr := fmt.Sprintf("%s:%s", serverHost, serverPort)
 
 	srv := &http.Server{
-		Handler:      r,
 		Addr:         addr,
+		Handler:      r,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
 
 	go func() {
-		log.Printf("Auth service listening on %s", addr)
+		log.Printf("✅ Auth service listening on %s (0.0.0.0 for Docker)", addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server error: %v", err)
 		}
