@@ -1,12 +1,12 @@
 /**
  * ProfilePage Component - страница профиля пользователя
- * Включает информацию о пользователе, настройки и достижения
+ * Добавлена новая секция «Стать Автором»
  */
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { FiUser, FiSettings, FiAward, FiLogOut, FiEdit2 } from 'react-icons/fi';
+import { FiUser, FiSettings, FiAward, FiLogOut, FiEdit2, FiEdit3 } from 'react-icons/fi';
 import { useAuth } from '../auth/AuthContext';
 import { profileApi } from '../../services/api';
 import { getInitial, formatDate } from '../../utils/helpers';
@@ -29,12 +29,8 @@ const ProfilePage = () => {
         const data = await profileApi.getProfile();
         setProfileData(data);
         
-        // Обновляем данные пользователя, если они изменились
         if (data.username !== user?.username || data.email !== user?.email) {
-          login({
-            username: data.username,
-            email: data.email,
-          });
+          login({ username: data.username, email: data.email });
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -63,10 +59,12 @@ const ProfilePage = () => {
     }
   };
 
+  // ==================== ТАБЫ ====================
   const tabs = [
     { id: 'profile', label: 'Профиль', icon: <FiUser /> },
     { id: 'settings', label: 'Настройки', icon: <FiSettings /> },
     { id: 'achievements', label: 'Достижения', icon: <FiAward /> },
+    { id: 'author', label: 'Стать Автором', icon: <FiEdit3 /> },   // ← НОВЫЙ ТАБ
   ];
 
   if (isLoading) {
@@ -84,12 +82,7 @@ const ProfilePage = () => {
     <div className="profile-page">
       <div className="profile-container">
         {/* Заголовок профиля */}
-        <motion.div
-          className="profile-header"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <motion.div className="profile-header" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <div className="profile-avatar">
             <div className="profile-avatar-placeholder">
               {getInitial(user?.username)}
@@ -121,12 +114,7 @@ const ProfilePage = () => {
         </motion.div>
 
         {/* Навигация */}
-        <motion.div
-          className="profile-nav"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-        >
+        <motion.div className="profile-nav" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -138,23 +126,16 @@ const ProfilePage = () => {
             </button>
           ))}
           
-          <button
-            className="profile-nav-btn profile-nav-btn--logout"
-            onClick={handleLogout}
-          >
+          <button className="profile-nav-btn profile-nav-btn--logout" onClick={handleLogout}>
             <FiLogOut />
             Выйти
           </button>
         </motion.div>
 
         {/* Секции */}
-        <motion.div
-          className="profile-sections"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-        >
-          {/* Профиль */}
+        <motion.div className="profile-sections" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+
+          {/* === Профиль === */}
           {activeTab === 'profile' && (
             <div className="profile-section">
               <h2 className="profile-section-title">Основная информация</h2>
@@ -169,65 +150,71 @@ const ProfilePage = () => {
                 </div>
                 <div className="profile-info-item">
                   <span className="profile-info-label">Дата регистрации</span>
-                  <span className="profile-info-value">
-                    {formatDate(profileData?.created_at)}
-                  </span>
+                  <span className="profile-info-value">{formatDate(profileData?.created_at)}</span>
                 </div>
                 <div className="profile-info-item">
                   <span className="profile-info-label">Последний вход</span>
-                  <span className="profile-info-value">
-                    {formatDate(profileData?.last_login)}
-                  </span>
+                  <span className="profile-info-value">{formatDate(profileData?.last_login)}</span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Настройки */}
+          {/* === Настройки === */}
           {activeTab === 'settings' && (
             <div className="profile-section">
               <h2 className="profile-section-title">Настройки аккаунта</h2>
               <div className="profile-settings-form">
                 <div className="profile-form-group">
                   <label className="profile-form-label">Имя пользователя</label>
-                  <input
-                    type="text"
-                    className="profile-form-input"
-                    value={user?.username || ''}
-                    disabled
-                  />
+                  <input type="text" className="profile-form-input" value={user?.username || ''} disabled />
                 </div>
                 <div className="profile-form-group">
                   <label className="profile-form-label">Email</label>
-                  <input
-                    type="email"
-                    className="profile-form-input"
-                    value={user?.email || ''}
-                    disabled
-                  />
+                  <input type="email" className="profile-form-input" value={user?.email || ''} disabled />
                 </div>
-                <Button variant="primary" size="medium">
-                  Сохранить изменения
-                </Button>
+                <Button variant="primary" size="medium">Сохранить изменения</Button>
               </div>
             </div>
           )}
 
-          {/* Достижения */}
+          {/* === Достижения === */}
           {activeTab === 'achievements' && (
             <div className="profile-section">
               <h2 className="profile-section-title">Достижения</h2>
               <div className="profile-empty">
                 <div className="profile-empty-icon">🏆</div>
-                <p className="profile-empty-text">
-                  У вас пока нет достижений. Читайте книги и получайте награды!
-                </p>
-                <Button variant="primary" size="medium">
-                  Начать читать
-                </Button>
+                <p className="profile-empty-text">У вас пока нет достижений. Читайте книги и получайте награды!</p>
+                <Button variant="primary" size="medium">Начать читать</Button>
               </div>
             </div>
           )}
+
+          {/* === НОВАЯ СЕКЦИЯ: Стать Автором === */}
+          {activeTab === 'author' && (
+            <div className="profile-section profile-author-section">
+              <h2 className="profile-section-title">Стать Автором</h2>
+              <div className="profile-author-content">
+                <div className="profile-author-icon">✍️</div>
+                <h3>Публикуйте свои книги в Либрариум</h3>
+                <p>
+                  Станьте автором и делитесь своими произведениями с тысячами читателей.<br />
+                  Получайте доход от чтений, отзывы и поддержку сообщества.
+                </p>
+                <Button 
+                  variant="primary" 
+                  size="large"
+                  onClick={() => alert('Форма подачи заявки на авторство будет здесь (пока в разработке)')}
+                >
+                  Подать заявку на авторство
+                </Button>
+                <p className="profile-author-note">
+                  Заявка рассматривается модераторами в течение 1–3 дней
+                </p>
+              </div>
+            </div>
+          )}
+
         </motion.div>
       </div>
     </div>

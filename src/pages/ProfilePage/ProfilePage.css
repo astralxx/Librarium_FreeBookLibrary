@@ -233,6 +233,52 @@
   .save-button:hover {
     background: #ff8d4c;
   }
+
+  /* ====================== СЕКЦИЯ «СТАТЬ АВТОРОМ» ====================== */
+.profile-author-section {
+  text-align: center;
+}
+
+.profile-author-content {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--spacing-xl) var(--spacing-2xl);
+}
+
+.profile-author-icon {
+  font-size: 4.5rem;
+  margin-bottom: var(--spacing-lg);
+  display: block;
+}
+
+.profile-author-content h3 {
+  font-size: 1.75rem;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+}
+
+.profile-author-content p {
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.profile-author-note {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-top: var(--spacing-lg);
+  font-style: italic;
+}
+
+/* Светлая тема (если используете) */
+.theme-light .profile-author-content h3 {
+  color: #111111;
+}
+
+.theme-light .profile-author-content p {
+  color: #525252;
+}
   
   /* Адаптивные стили */
   @media (max-width: 768px) {
